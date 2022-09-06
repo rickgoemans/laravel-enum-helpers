@@ -108,6 +108,9 @@ trait HasEnumHelpers
         return $keyCompare <=> $keySelf;
     }
 
+    /**
+     * The base (translated path) label.
+     */
     protected function baseLabel(string $baseKey): string
     {
         return __("{$baseKey}{$this->value}");
