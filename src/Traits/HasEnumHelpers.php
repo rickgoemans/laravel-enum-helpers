@@ -27,6 +27,17 @@ trait HasEnumHelpers
     }
 
     /**
+     * Returns a random case.
+     */
+    public static function randomCase(): static
+    {
+        $cases = self::cases();
+        $randomKey = array_rand($cases);
+
+        return $cases[$randomKey];
+    }
+
+    /**
      * Return the options for Laravel Nova (Multi)Select fields.
      *
      * @see https://nova.laravel.com/docs/4.0/resources/fields.html#select-field
@@ -37,11 +48,6 @@ trait HasEnumHelpers
             array_map(fn (UnitEnum $enum) => $enum->value, self::cases()),
             array_map(fn (UnitEnum $enum) => $enum->label(), self::cases())
         );
-    }
-
-    public static function optionsForValidation(): string
-    {
-        return implode(',', array_map(fn (UnitEnum $enum) => $enum->value, self::cases()));
     }
 
     /**
