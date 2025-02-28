@@ -3,16 +3,30 @@
 namespace Rickgoemans\LaravelEnumHelpers\Traits;
 
 use Exception;
+use Illuminate\Support\Str;
 use UnitEnum;
 
 trait HasEnumHelpers
 {
     /**
+     * Overwrite me to have custom translation keys.
+     */
+    public static function baseLabel(): ?string
+    {
+        return null;
+    }
+
+    public static function labels(bool $translate = true): array
+    {
+        return array_map(fn (UnitEnum|self $enum): string => $enum->label($translate), self::cases());
+    }
+
+    /**
      * Returns the options as key => value.
      */
     public static function options(): array
     {
-        return array_map(fn (UnitEnum $enum) => $enum->value, self::cases());
+        return array_map(fn (UnitEnum|self $enum) => $enum->value, self::cases());
     }
 
     /**
@@ -21,8 +35,8 @@ trait HasEnumHelpers
     public static function keyValueOptions(): array
     {
         return array_combine(
-            array_map(fn (UnitEnum $enum) => $enum->name, self::cases()),
-            array_map(fn (UnitEnum $enum) => $enum->value, self::cases())
+            array_map(fn (UnitEnum|self $enum) => $enum->name, self::cases()),
+            array_map(fn (UnitEnum|self $enum) => $enum->value, self::cases())
         );
     }
 
@@ -45,8 +59,8 @@ trait HasEnumHelpers
     public static function optionsForSelect(): array
     {
         return array_combine(
-            array_map(fn (UnitEnum $enum) => $enum->value, self::cases()),
-            array_map(fn (UnitEnum $enum) => $enum->label(), self::cases())
+            array_map(fn (UnitEnum|self $enum) => $enum->value, self::cases()),
+            array_map(fn (UnitEnum|self $enum) => $enum->label(), self::cases())
         );
     }
 
@@ -89,9 +103,22 @@ trait HasEnumHelpers
         return self::compare($compare) === 0;
     }
 
-    public function label(): string
+    public function label(bool $translate = true): string
     {
-        return $this->value;
+        $baseLabel = static::baseLabel();
+
+        if (is_null($baseLabel)) {
+            $baseLabel = Str::of(class_basename(static::class))
+                ->snake()
+                ->upper()
+                ->toString();
+        }
+
+        $key = "{$baseLabel}_{$this->name}";
+
+        return $translate
+            ? __($key)
+            : $key;
     }
 
     /** @throws Exception */
@@ -112,13 +139,5 @@ trait HasEnumHelpers
         $keyCompare = array_search($compareValue, $order);
 
         return $keyCompare <=> $keySelf;
-    }
-
-    /**
-     * The base (translated path) label.
-     */
-    protected function baseLabel(string $baseKey): string
-    {
-        return __("{$baseKey}{$this->value}");
     }
 }
