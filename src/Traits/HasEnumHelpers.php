@@ -108,13 +108,10 @@ trait HasEnumHelpers
         $baseLabel = static::baseLabel();
 
         if (is_null($baseLabel)) {
-            $baseLabel = Str::of(class_basename(static::class))
-                ->snake()
-                ->upper()
-                ->toString();
+            $baseLabel = Str::snake(class_basename(static::class), '.');
         }
 
-        $key = "{$baseLabel}_{$this->name}";
+        $key = Str::lower("{$baseLabel}.{$this->name}");
 
         return $translate
             ? __($key)
